@@ -27,6 +27,7 @@
 }
 
 - (void)viewDidLoad {
+    [super iPad];
     [super viewDidLoad];
     
     // ตั้งค่าพื้นหลังรวมเป็นสีดำสนิทสนมกับ Dark Mode 
@@ -157,7 +158,7 @@
 #pragma mark - PHPickerViewControllerDelegate
 
 - (void)picker:(PHPickerViewController *)picker didFinishPicking:(NSArray<PHPickerResult *> *)results {
-    [picker dismissViewController:animated:YES completion:nil];
+    [picker dismissViewControllerAnimated:YES completion:nil];
     
     if (results.count == 0) return;
     
@@ -167,9 +168,11 @@
     NSItemProvider *provider = result.itemProvider;
     
     // ดึง Type Identifier ของไฟล์วิดีโอต้นฉบับ
-    NSString *typeIdentifier = (NSString *)kUTTypeMPEG4;
-    if ([provider safeFileLoadWithTypeIdentifier:typeIdentifier]) { // ตรวจสอบความเข้ากันได้
-         typeIdentifier = provider.registeredTypeIdentifiers.firstObject;
+    NSString *typeIdentifier = @"public.mpeg-4";
+    if (![provider hasItemConformingToTypeIdentifier:typeIdentifier]) {
+        if (provider.registeredTypeIdentifiers.count > 0) {
+            typeIdentifier = provider.registeredTypeIdentifiers.firstObject;
+        }
     }
     
     [provider loadFileRepresentationForTypeIdentifier:typeIdentifier completionHandler:^(NSURL * _Nullable url, NSError * _Nullable error) {
