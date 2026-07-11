@@ -35,8 +35,8 @@ $(APPLICATION_NAME)_LDFLAGS += -lstdc++ -undefined dynamic_lookup -F./deps -Wl,-
 
 $(APPLICATION_NAME)_FRAMEWORKS += UIKit Foundation CoreGraphics QuartzCore Security AVFoundation AudioToolbox CoreMedia MobileCoreServices SystemConfiguration ImageIO WebKit UniformTypeIdentifiers PhotosUI
 
-# ประกาศเพิ่ม EXTRA_FRAMEWORKS เพื่อดึง ffmpegkit เข้ามาลิงก์ตอนบิลด์
-$(APPLICATION_NAME)_EXTRA_FRAMEWORKS += ffmpegkit
+# ประกาศเพิ่ม EXTRA_FRAMEWORKS เพื่อดึง ffmpegkit และ lottie เข้ามาลิงก์ตอนบิลด์
+$(APPLICATION_NAME)_EXTRA_FRAMEWORKS += ffmpegkit Lottie
 
 $(APPLICATION_NAME)_CODESIGN_FLAGS += -Slayout/entitlements.plist
 $(APPLICATION_NAME)_RESOURCE_DIRS = ./layout/Resources
