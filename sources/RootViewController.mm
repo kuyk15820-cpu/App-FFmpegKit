@@ -166,14 +166,13 @@
     PHPickerResult *result = results.firstObject;
     NSItemProvider *provider = result.itemProvider;
     
-    // ดึง Type Identifier ของไฟล์วิดีโอต้นฉบับ
-    NSString *typeIdentifier = @"public.mpeg-4";
-    if (![provider hasItemConformingToTypeIdentifier:typeIdentifier]) {
-        if (provider.registeredTypeIdentifiers.count > 0) {
-            typeIdentifier = provider.registeredTypeIdentifiers.firstObject;
-        }
+    // ดึงประเภทระบุไฟล์โดยเน้นแบบครอบคลุมภาพเคลื่อนไหวภาพรวม (public.movie)
+    NSString *typeIdentifier = (NSString *)kUTTypeMovie;
+    if (provider.registeredTypeIdentifiers.count > 0) {
+        typeIdentifier = provider.registeredTypeIdentifiers.firstObject;
     }
     
+    // ปรับโครงสร้างส่วนดึงพาร์ทระบบความปลอดภัยระดับ iOS Sandbox
     [provider loadFileRepresentationForTypeIdentifier:typeIdentifier completionHandler:^(NSURL * _Nullable url, NSError * _Nullable error) {
         if (error || !url) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -183,6 +182,9 @@
             return;
         }
         
+        // ความปลอดภัยระดับสูง: เรียกสิทธิ์ความปลอดภัยเข้าถึงพาร์ทไฟล์แชร์ (Security-Scoped Resource)
+        BOOL startAccess = [url startAccessingSecurityScopedResource];
+        
         // คัดลอกวิดีโอไปยังตำแหน่งโฟลเดอร์ชั่วคราวของตัวแอป
         NSString *tempDir = NSTemporaryDirectory();
         NSString *inputPath = [tempDir stringByAppendingPathComponent:@"Test.MP4"];
@@ -190,7 +192,22 @@
         
         [[NSFileManager defaultManager] removeItemAtPath:inputPath error:nil];
         [[NSFileManager defaultManager] removeItemAtPath:outputPath error:nil];
-        [[NSFileManager defaultManager] copyItemAtPath:url.path toPath:inputPath error:nil];
+        
+        NSError *copyError = nil;
+        [[NSFileManager defaultManager] copyItemAtPath:url.path toPath:inputPath error:&copyError];
+        
+        // คืนสิทธิ์การเข้าถึงพาร์ทระบบความปลอดภัยทันทีที่สำเนาไฟล์หลุดมาพาร์ทแอปสำเร็จ
+        if (startAccess) {
+            [url stopAccessingSecurityScopedResource];
+        }
+        
+        if (copyError) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.spinner stopAnimating];
+                [self showStatusAlert:@"ไม่สามารถสร้างไฟล์สำเนาเพื่อประมวลผลได้"];
+            });
+            return;
+        }
         
         // ประกอบคำสั่งและเริ่มประมวลผลผ่านคลัง FFmpegKit
         NSString *cmd = [NSString stringWithFormat:@"-itsscale %f -i %@ -codec copy %@", self.currentScale, inputPath, outputPath];
