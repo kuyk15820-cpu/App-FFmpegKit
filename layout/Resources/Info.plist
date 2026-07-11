@@ -53,6 +53,10 @@
 	<string>Copyright © 2026 TGS. All Rights Reserved.</string>
 	<key>NSPrincipalClass</key>
 	<string>UIApplication</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>แอปพลิเคชันนี้ต้องการเข้าถึงคลังภาพเพื่อนำวิดีโอที่ประมวลผลเสร็จแล้วกลับมาบันทึกลงในเครื่องของคุณ</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>แอปพลิเคชันนี้ต้องการสิทธิ์ในการบันทึกไฟล์วิดีโอใหม่ลงคลังภาพของคุณ</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
