@@ -1,7 +1,7 @@
 #import "RootViewController.h"
 #import <ffmpegkit/FFmpegKit.h>
 #import <PhotosUI/PhotosUI.h>
-#import <MobileCoreServices/MobileCoreServices.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @interface RootViewController () <UITableViewDelegate, UITableViewDataSource, PHPickerViewControllerDelegate>
 
@@ -27,6 +27,7 @@
 }
 
 - (void)viewDidLoad {
+    [super iPad];
     [super viewDidLoad];
     
     // ตั้งค่าพื้นหลังรวมเป็นสีดำสนิทสนมกับ Dark Mode 
@@ -166,8 +167,8 @@
     PHPickerResult *result = results.firstObject;
     NSItemProvider *provider = result.itemProvider;
     
-    // ดึงประเภทระบุไฟล์โดยเน้นแบบครอบคลุมภาพเคลื่อนไหวภาพรวม (public.movie)
-    NSString *typeIdentifier = (NSString *)kUTTypeMovie;
+    // แก้ไข: ใช้ UTTypeMovie.identifier แทนระบบเก่าที่ถูกยกเลิกไปแล้ว
+    NSString *typeIdentifier = UTTypeMovie.identifier;
     if (provider.registeredTypeIdentifiers.count > 0) {
         typeIdentifier = provider.registeredTypeIdentifiers.firstObject;
     }
