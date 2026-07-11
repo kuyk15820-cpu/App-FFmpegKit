@@ -23,14 +23,15 @@ $(APPLICATION_NAME)_FILES += $(wildcard sources/*.mm sources/*.m)
 
 $(APPLICATION_NAME)_CFLAGS += -fobjc-arc -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-unused-value -Wno-module-import-in-extern-c -Wunused-but-set-variable -Wno-error=missing-noescape -Wno-error=objc-dictionary-duplicate-keys -Wno-error -Wno-unused-property-ivar -Wno-implicit-function-declaration
 
-$(APPLICATION_NAME)_CFLAGS += -Iheaders -Isources -IENCRYPT -IHUD -F. -I./ffmpegkit.framework/Headers
+# [แก้ไข] เปลี่ยนพาร์ทค้นหา Framework และ Header ไปที่โฟลเดอร์ deps
+$(APPLICATION_NAME)_CFLAGS += -Iheaders -Isources -IENCRYPT -IHUD -F./deps -I./deps/ffmpegkit.framework/Headers
 
 $(APPLICATION_NAME)_STRIP = 1
 
 $(APPLICATION_NAME)_CCFLAGS += -std=c++17 -fno-rtti -DNDEBUG -Wall -Wno-deprecated-declarations -Wno-unused-variable -Wno-unused-value -Wno-unused-function -fvisibility=hidden -IENCRYPT -fbracket-depth=1024
 
-# -F. สั่งให้หา Framework ในโฟลเดอร์ปัจจุบัน และใส่ rpath เพื่อให้แอปวิ่งมาหาในแอปตัวเองตอนรัน
-$(APPLICATION_NAME)_LDFLAGS += -lstdc++ -undefined dynamic_lookup -F. -Wl,-rpath,@executable_path/Frameworks
+# [แก้ไข] เปลี่ยน -F. เป็น -F./deps เพื่อให้ลิงก์ผ่านโฟลเดอร์ deps
+$(APPLICATION_NAME)_LDFLAGS += -lstdc++ -undefined dynamic_lookup -F./deps -Wl,-rpath,@executable_path/Frameworks
 
 $(APPLICATION_NAME)_FRAMEWORKS += UIKit Foundation CoreGraphics QuartzCore Security AVFoundation AudioToolbox CoreMedia MobileCoreServices SystemConfiguration ImageIO WebKit UniformTypeIdentifiers PhotosUI
 
@@ -49,11 +50,15 @@ before-package::
 	@echo "[*] Updating Build Number to $(BUILD_NUMBER)..."
 	@sed -i '' 's/<string>1<\/string>/<string>$(BUILD_NUMBER)<\/string>/g' $(THEOS_STAGING_DIR)/Applications/$(APPLICATION_NAME).app/Info.plist
 	
-	@echo "[*] Copying ffmpegkit.framework into App Bundle..."
+	@echo "[*] Copying all FFmpegKit frameworks from deps into App Bundle..."
 	@mkdir -p $(THEOS_STAGING_DIR)/Applications/$(APPLICATION_NAME).app/Frameworks
-	@cp -a ./ffmpegkit.framework $(THEOS_STAGING_DIR)/Applications/$(APPLICATION_NAME).app/Frameworks/
+	
+	# [แก้ไข] ดึงไฟล์ .framework ทั้ง 8 ตัวจากโฟลเดอร์ deps เข้าไปในแอปพลิเคชันโดยตรง
+	@cp -a ./deps/*.framework $(THEOS_STAGING_DIR)/Applications/$(APPLICATION_NAME).app/Frameworks/
+	
 	@echo "[*] Cleaning developer headers inside app bundle..."
-	@rm -rf $(THEOS_STAGING_DIR)/Applications/$(APPLICATION_NAME).app/Frameworks/ffmpegkit.framework/Headers
+	# [แก้ไข] ล้าง Headers ของทุก Framework ที่ถูกก๊อปปี้เข้าไปเพื่อประหยัดพื้นที่แอป
+	@rm -rf $(THEOS_STAGING_DIR)/Applications/$(APPLICATION_NAME).app/Frameworks/*.framework/Headers
 
 after-package::
 	@rm -rf Payload
